@@ -5,7 +5,50 @@
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="./style.css">
+<style>
+  .table-container {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table-container td,
+.table-container th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.table-container tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.table-container tr:hover {
+    background-color: #ddd;
+}
+
+.table-container th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #04AA6D;
+    color: white;
+}
+
+
+.search-input {
+    width: 30%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+@media only screen and (max-width: 600px) {
+    .search-input {
+        width: 100%;
+
+    }
+}
+</style>
 </head>
 <body>
 
@@ -25,6 +68,125 @@
     </table>
   </div>
 
-<script src="./script.js"></script>
+<script>
+  const table = document.getElementById("mytable");
+const input = document.getElementById("myinput");
+const tableData = [
+  { name: "Onion", quantity: 29, price: 1.2, expiry: "2021-09-12" },
+  { name: "Apple", quantity: 55, price: 3.3, expiry: "2021-09-22" },
+  { name: "Potato", quantity: 25, price: 2.5, expiry: "2021-09-18" },
+  { name: "Carrot", quantity: 8, price: 0.8, expiry: "2021-09-25" },
+];
+const caretUpClassName = "fa fa-caret-up";
+const caretDownClassName = "fa fa-caret-down";
+
+const sort_by = (field, reverse, primer) => {
+  const key = primer
+    ? function (x) {
+        return primer(x[field]);
+      }
+    : function (x) {
+        return x[field];
+      };
+
+  reverse = !reverse ? 1 : -1;
+
+  return function (a, b) {
+    return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
+  };
+};
+
+function clearArrow() {
+  let carets = document.getElementsByClassName("caret");
+  for (let caret of carets) {
+    caret.className = "caret";
+  }
+}
+
+function toggleArrow(event) {
+  let element = event.target;
+  let caret, field, reverse;
+  if (element.tagName === "TH") {
+    caret = element.getElementsByClassName("caret")[0];
+    field = element.id;
+  } else {
+    caret = element;
+    field = element.parentElement.id;
+  }
+
+  let iconClassName = caret.className;
+  clearArrow();
+  if (iconClassName.includes(caretUpClassName)) {
+    caret.className = `caret ${caretDownClassName}`;
+    reverse = false;
+  } else {
+    reverse = true;
+    caret.className = `caret ${caretUpClassName}`;
+  }
+
+  tableData.sort(sort_by(field, reverse));
+  populateTable();
+}
+
+function populateTable() {
+  table.innerHTML = "";
+  for (let data of tableData) {
+    let row = table.insertRow(-1);
+    let name = row.insertCell(0);
+    name.innerHTML = data.name;
+
+    let quantity = row.insertCell(1);
+    quantity.innerHTML = data.quantity;
+
+    let price = row.insertCell(2);
+    price.innerHTML = data.price;
+
+    let expiry = row.insertCell(3);
+    expiry.innerHTML = data.expiry;
+  }
+
+  filterTable();
+}
+
+function filterTable() {
+  let filter = input.value.toUpperCase();
+  rows = table.getElementsByTagName("TR");
+  let flag = false;
+
+  for (let row of rows) {
+    let cells = row.getElementsByTagName("TD");
+    for (let cell of cells) {
+      if (cell.textContent.toUpperCase().indexOf(filter) > -1) {
+        flag = true;
+      } else {
+        cell.style.backgroundColor = "";
+      }
+    }
+
+    if (flag) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+
+    flag = false;
+  }
+}
+
+populateTable();
+
+let tableColumns = document.getElementsByClassName("table-column");
+
+for (let column of tableColumns) {
+  column.addEventListener("click", function (event) {
+    toggleArrow(event);
+  });
+}
+
+input.addEventListener("keyup", function (event) {
+  filterTable();
+});
+
+</script>
 </body>
 </html>
